@@ -46,23 +46,23 @@ class DocumentKMLTemplate(kmltrack.template.Template):
 
                 @staticmethod
                 def icon_color(out_file, context):
-                    try:
-                        c = eval(context['color'], context)
-                    except:
-                        c = 0
+                    c = context.get('color', 0)
 
-                    def fudge(v):
-                        a = 0.1
-                        return v/2.0 - math.sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0
+                    if isinstance(c, float):
+                        def fudge(v):
+                            a = 0.1
+                            return v/2.0 - math.sqrt(4.0*a*a + v*v - 2.0*v + 1.0) / 2.0 + 1.0/2.0
+                        c = (
+                            255, # Alpha
+                            fudge(c * 1.0) * 255, # Blue
+                            fudge(c * 1.5) * 255, # Green
+                            fudge(c * 3.0) * 255 # Red
+                            )
 
-                    color = (
-                        255, # Alpha
-                        fudge(c * 1.0) * 255, # Blue
-                        fudge(c * 1.5) * 255, # Green
-                        fudge(c * 3.0) * 255 # Red
-                        )
+                    if isinstance(c, tuple):
+                        c = '%02x%02x%02x%02x' % c
 
-                    out_file.write('%02x%02x%02x%02x' % color)
+                    out_file.write(c)
 
             def placemarks_kml(self, out_file, context):
                 for row in context['rows']:

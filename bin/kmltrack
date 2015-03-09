@@ -34,17 +34,15 @@ Options:
     --format=csv
       Format is auto-detected from file extension if not specified.
 
-    --map-lat=SRC_COL_NAME
-    --map-lon=SRC_COL_NAME
-    --map-timestamp=SRC_COL_NAME
-    --map-course=SRC_COL_NAME
-    (--map-color=SRC_COL_NAME)
-      Change column names if the names in the source does not match the
-      canonical names this tool requires.
+    --map-lat=EXPR        default: float(lat)
+    --map-lon=EXPR        default: float(lat)
+    --map-timestamp=EXPR  default: d(timestamp)
+    --map-course=EXPR     default: float(course)
+    --map-color=EXPR      default: float(color)
+      Calculate values for the various columns. EXPR is any python
+      expression over the row column values available as variables.
 
-    --color=EXPR
-      EXPR is any python expression over the row columns (after mapping),
-      resulting in a float value [0.0,1.0]
+    Color should be either a float in the range [0.0, 1.0] or a hex string 'AABBGGRR'
 """
 
 

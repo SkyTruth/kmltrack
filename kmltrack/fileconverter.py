@@ -10,26 +10,33 @@ except:
 
 def column_mapper(rows, **mapping):
     "Usage: column_mapper(rows, dst_col1=src_col1, dst_col2=src_col2, ...)"
-    mapping = {v:k for k,v in mapping.iteritems()}
+    env = {
+        "d": dateutil.parser.parse
+        }
     for row in rows:
-        yield {mapping.get(key, key): value
-               for key, value in row.iteritems()}
-
-def load_values(rows):
-    for row in rows:
-        if 'timestamp' in row:
-            row['timestamp'] = dateutil.parser.parse(row['timestamp'])
-        if 'lat' in row:
-            row['lat'] = float(row['lat'])
-        if 'lon' in row:
-            row['lon'] = float(row['lon'])
+        renv = dict(row)
+        renv.update(env)
+        renv['row'] = row
+        for key, expr in mapping.iteritems():
+            try:
+                row[key] = eval(expr, renv)
+            except:
+                pass
         yield row
 
 def file_to_kml(infile_name, outfile_name, reader, **kw):
+    column_map = {
+        'timestamp': 'd(timestamp)',
+        'lat': 'float(lat)',
+        'lon': 'float(lon)',
+        'color': 'float(color)',
+        'course': 'float(course)'
+        }
+    column_map.update(kw.get('column_map', {}))
+
     def input():
         with sys.stdin if infile_name is None or '-' == infile_name else open(infile_name, 'rb') as in_file:
-            for row in load_values(column_mapper(reader(in_file),
-                                                 **kw.get('column_map', {}))):
+            for row in column_mapper(reader(in_file), **column_map):
                 yield row
 
     with sys.stdout if outfile_name is None or '-' == outfile_name else open(outfile_name, 'w') as kml_file:
