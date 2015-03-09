@@ -27,9 +27,24 @@ def print_help():
     print """Usage: kmltrack [OPTIONS] INFILE OUTFILE
 
 Options:
+    --verify-rows
+
+    --format=msgpack
+    --format=json
+    --format=csv
+      Format is auto-detected from file extension if not specified.
+
     --map-lat=SRC_COL_NAME
     --map-lon=SRC_COL_NAME
     --map-timestamp=SRC_COL_NAME
+    --map-course=SRC_COL_NAME
+    (--map-color=SRC_COL_NAME)
+      Change column names if the names in the source does not match the
+      canonical names this tool requires.
+
+    --color=EXPR
+      EXPR is any python expression over the row columns (after mapping),
+      resulting in a float value [0.0,1.0]
 """
 
 
