@@ -23,7 +23,7 @@ setup(
     description = "kmltrack converts a track (a series of lat/lon/timestamp and optional measurement values) into a kml file.",
     keywords = "kml",
     install_requires = ["python-dateutil"],
-    version = "0.0.1",
+    version = "0.0.2",
     author = "Egil Moeller",
     author_email = "egil@skytruth.org",
     license = "GPL",
