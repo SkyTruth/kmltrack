@@ -4,7 +4,7 @@ class lookahead(object):
         self.it = iter(it)
         try:
             self.peek = self.it.next()
-        except:
+        except StopIteration:
             pass
     def __iter__(self):
         return self
@@ -16,6 +16,6 @@ class lookahead(object):
         finally:
             try:
                 self.peek = self.it.next()
-            except:
+            except StopIteration:
                 if hasattr(self, 'peek'):
                     del self.peek

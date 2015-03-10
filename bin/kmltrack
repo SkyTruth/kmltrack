@@ -28,6 +28,7 @@ def print_help():
 
 Options:
     --verify-rows
+    --verbose
 
     --format=msgpack
     --format=json
@@ -53,6 +54,8 @@ if '--help' in options:
     print_help()
 else:
     try:
+        if len(args) != 2:
+            raise Exception("No input or output file specified")
 
         options['column_map'] = {}
         for key, value in options.iteritems():
@@ -68,5 +71,7 @@ else:
         converter(*args, **options)
     except Exception, e:
         print e
-        traceback.print_exc()
+        if 'verbose' in options:
+            traceback.print_exc()
+        print
         print_help()
