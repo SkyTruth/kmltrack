@@ -4,74 +4,45 @@
 import sys
 import traceback
 import kmltrack.fileconverter
+import click
 
 
-def parse_argv(argv):
-    options = {}
-    args = []
-    for item in argv:
-        if item.startswith('--'):
-            item = item[2:]
-            if '=' in item:
-                key, value = item.split('=', 1)
-                options[key] = value
-            else:
-                options[item] = True
-        else:
-            args.append(item)
-
-    return args, options
+def key_val_parser(ctx, param, value):
+    return {val.split('=')[0]: val.split('=')[1]
+            for val in value}
 
 
-def print_help():
-    print """Usage: kmltrack [OPTIONS] INFILE OUTFILE
+@click.command()
+@click.option('--verbose', default=False, is_flag=True, help='More verbose error messages')
+@click.option('--verify-rows', default=False, is_flag=True, help='Verify rows and break if a bad row is detected')
+@click.option('--format', default=None, help='Input format. Valid values: msgpack, json, csv')
+@click.option(
+    '--map', metavar='FIELD=EXPR', multiple=True, callback=key_val_parser,
+    help="""Calculate values for the various columns. EXPR is any python expression over the row column values available as variables.
 
-Options:
-    --verify-rows
-    --verbose
-
-    --format=msgpack
-    --format=json
-    --format=csv
-      Format is auto-detected from file extension if not specified.
-
-    --map-lat=EXPR        default: float(lat)
-    --map-lon=EXPR        default: float(lat)
-    --map-timestamp=EXPR  default: d(timestamp)
-    --map-course=EXPR     default: float(course)
-    --map-color=EXPR      default: float(color)
-      Calculate values for the various columns. EXPR is any python
-      expression over the row column values available as variables.
+Defaults:
+    --map lat=float(lat)
+    --map lon=float(lat)
+    --map timestamp=d(timestamp)
+    --map course=float(course)
+    --map color=float(color)
 
     Color should be either a float in the range [0.0, 1.0] or a hex string 'AABBGGRR'
 """
-
-
-
-args, options = parse_argv(sys.argv[1:])
-
-if '--help' in options:
-    print_help()
-else:
+)
+@click.argument('input')
+@click.argument('output')
+def main(verbose, verify_rows, format, map, input, output):
     try:
-        if len(args) != 2:
-            raise Exception("No input or output file specified")
+        if format is None and '.' in input:
+            format = input.split('.')[-1]
 
-        options['column_map'] = {}
-        for key, value in options.iteritems():
-            if key.startswith('map-'):
-                key = key.split("-", 1)[1]
-                options['column_map'][key] = value
+        converter = getattr(kmltrack.fileconverter, "%s_to_kml" % (format,))
 
-        if 'format' not in options and '.' in args[0]:
-            options['format'] = args[0].split('.')[-1]
-
-        converter = getattr(kmltrack.fileconverter, "%s_to_kml" % (options['format'],))
-
-        converter(*args, **options)
+        converter(input, output, verbose=verbose, verify_rows=verify_rows, format=format, column_map=map)
     except Exception, e:
-        print e
-        if 'verbose' in options:
-            traceback.print_exc()
-        print
-        print_help()
+        raise click.UsageError(str(e))
+        
+
+if __name__ == '__main__':
+    main()
