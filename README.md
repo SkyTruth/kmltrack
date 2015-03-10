@@ -14,3 +14,7 @@ or
     git clone https://github.com/SkyTruth/kmltrack.git
     cd kmltrack
     python setup.py install
+
+Usage example:
+
+    kmltrack --map-color='float(speed) / 17.0' --map-course=cog input.msgpack output.kml
