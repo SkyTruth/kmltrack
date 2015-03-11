@@ -5,11 +5,13 @@ import click.testing
 import os.path
 import kmltrack.cli
 import msgpack
+import json
+import csv
 import elementtree.ElementTree
 
 
 class KmlTrackTest(unittest.TestCase):
-    keep_tree = False
+    keep_tree = True
 
     test_track = [
         {'lat': 0.0, 'lon': 0.3, 'timestamp': '1970-01-01T00:00:00.000Z', 'course': 180.0, 'color': 0.5},
@@ -23,10 +25,24 @@ class KmlTrackTest(unittest.TestCase):
         self.runner = click.testing.CliRunner()
         if self.keep_tree:
             print 'KmlTrackTest is running in %s' % self.dir
-        self.infile = os.path.join(self.dir, 'in.msgpack')
-        with open(self.infile, 'w') as f:
+        self.infile_msgpack = os.path.join(self.dir, 'in.msgpack')
+        with open(self.infile_msgpack, 'w') as f:
             for row in self.test_track:
                 msgpack.dump(row, f)
+ 
+        self.infile_json = os.path.join(self.dir, 'in.json')
+        with open(self.infile_json, 'w') as f:
+            for row in self.test_track:
+                json.dump(row, f)
+                f.write('\n')
+
+        self.infile_csv = os.path.join(self.dir, 'in.csv')
+        with open(self.infile_csv, 'w') as f:
+            f = csv.DictWriter(f, fieldnames=['lat', 'lon', 'timestamp', 'course', 'color'])
+            f.writeheader()
+            for row in self.test_track:
+                f.writerow(row)
+
         self.outfile = os.path.join(self.dir, 'out.kml')
 
     def tearDown(self):
@@ -37,7 +53,7 @@ class KmlTrackTest(unittest.TestCase):
         return self.runner.invoke(kmltrack.cli.main, args, catch_exceptions=False)
 
     def test_defaults(self):
-        self.runcmd("--verify-rows", self.infile, self.outfile)
+        result = self.runcmd("--verify-rows", self.infile_msgpack, self.outfile)
 
         mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
 
@@ -55,8 +71,26 @@ class KmlTrackTest(unittest.TestCase):
         colors = mydoc.findall('//{http://www.opengis.net/kml/2.2}Placemark/{http://www.opengis.net/kml/2.2}Style//{http://www.opengis.net/kml/2.2}color')
         self.assertEqual([color.text.strip() for color in colors], ['ff7ab6fa', 'ff7ab6fa', 'ff7ab6fa', 'ff7ab6fa'])
 
+    def test_csv(self):
+        self.runcmd("--verify-rows", self.infile_csv, self.outfile)
+
+        mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
+
+        lines = mydoc.findall('//{http://www.opengis.net/kml/2.2}LineString/{http://www.opengis.net/kml/2.2}coordinates')
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].text.strip(), '0.3,0.0,0 0.2,0.1,0 0.1,0.2,0 0.0,0.3,0')
+
+    def test_json(self):
+        self.runcmd("--verify-rows", self.infile_json, self.outfile)
+
+        mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
+
+        lines = mydoc.findall('//{http://www.opengis.net/kml/2.2}LineString/{http://www.opengis.net/kml/2.2}coordinates')
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0].text.strip(), '0.3,0.0,0 0.2,0.1,0 0.1,0.2,0 0.0,0.3,0')
+
     def test_remap(self):
-        self.runcmd("--verify-rows", "--map", "color=1.0", "--map", "lat=float(lat) + 1.0", "--map", "timestamp=d(timestamp) + datetime.timedelta(1)", self.infile, self.outfile)
+        self.runcmd("--verify-rows", "--map", "color=1.0", "--map", "lat=float(lat) + 1.0", "--map", "timestamp=d(timestamp) + datetime.timedelta(1)", self.infile_msgpack, self.outfile)
 
         mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
 
@@ -75,7 +109,15 @@ class KmlTrackTest(unittest.TestCase):
         self.assertEqual([color.text.strip() for color in colors], ['ffe5fafd', 'ffe5fafd', 'ffe5fafd', 'ffe5fafd'])
 
     def test_verify(self):
-        result = self.runcmd("--verify-rows", "--map", "timestamp=foo()", self.infile, self.outfile)
+        result = self.runcmd("--verify-rows", "--map", "timestamp=foo()", self.infile_msgpack, self.outfile)
 
         self.assertEqual(result.exit_code, 2)
         self.assertIn("Error in column mapper expression: name 'foo' is not defined", result.output)
+
+    def test_dont_verify(self):
+        result = self.runcmd("--verbose", "--map", "timestamp=foo()", self.infile_msgpack, self.outfile)
+        self.assertEqual(result.exit_code, 0)
+        
+        mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
+        points = mydoc.findall('//{http://www.opengis.net/kml/2.2}Point/{http://www.opengis.net/kml/2.2}coordinates')
+        self.assertEqual(len(points), 0)

@@ -7,7 +7,7 @@ import csv
 import json
 try:
     import msgpack
-except:
+except: # pragma: no cover
     pass
 
 def column_mapper(rows, **kw):
@@ -59,7 +59,7 @@ def file_to_kml(infile_name, outfile_name, reader, **kw):
 
 
 def csv_to_kml(infile_name, outfile_name, **kw):
-     file_to_kml(infile_name, outfile_name, cvs.DictReader, **kw)
+     file_to_kml(infile_name, outfile_name, csv.DictReader, **kw)
 
 def json_to_kml(infile_name, outfile_name, **kw):
     def reader(file):
