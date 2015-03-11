@@ -38,4 +38,6 @@ def main(verbose, verify_rows, format, map, input, output):
 
         converter(input, output, verbose=verbose, verify_rows=verify_rows, format=format, column_map=map)
     except Exception, e:
+        if verbose:
+            traceback.print_exc()
         raise click.UsageError(str(e))

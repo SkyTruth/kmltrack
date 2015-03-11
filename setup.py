@@ -15,7 +15,7 @@ setup(
     extras_require = {
         'cli':  ["click"]
     },
-    version = "0.0.3",
+    version = "0.0.4",
     author = "Egil Moeller",
     author_email = "egil@skytruth.org",
     license = "GPL",
