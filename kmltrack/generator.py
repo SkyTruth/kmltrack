@@ -20,7 +20,9 @@ class DocumentKMLTemplate(kmltrack.template.Template):
 
             for row in context['reader']:
                 if 'timestamp' not in row or 'lat' not in row or 'lon' not in row:
-                    if context.get('verify-rows', False):
+                    # This should really be captured in the column mapper of fileconverter
+                    # But in case we're not using that...
+                    if context.get('verify-rows', False): # pragma: no cover
                         raise Exception("Missing column (lat, lon, timestamp): " + str(row))
                     continue
                 mmsi = row.get('mmsi', '')

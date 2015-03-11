@@ -4,6 +4,8 @@ import shutil
 import click.testing
 import os.path
 import kmltrack.cli
+import kmltrack.iterators
+import kmltrack.template
 import msgpack
 import json
 import csv
@@ -15,9 +17,9 @@ class KmlTrackTest(unittest.TestCase):
 
     test_track = [
         {'lat': 0.0, 'lon': 0.3, 'timestamp': '1970-01-01T00:00:00.000Z', 'course': 180.0, 'color': 0.5},
-        {'lat': 0.1, 'lon': 0.2, 'timestamp': '1970-01-01T01:00:00.000Z', 'course': 180.0, 'color': 0.5},
-        {'lat': 0.2, 'lon': 0.1, 'timestamp': '1970-01-01T02:00:00.000Z', 'course': 180.0, 'color': 0.5},
-        {'lat': 0.3, 'lon': 0.0, 'timestamp': '1970-01-01T03:00:00.000Z', 'course': 180.0, 'color': 0.5},
+        {'lat': 0.1, 'lon': 0.2, 'timestamp': '1970-01-01T12:00:00.000Z', 'course': 180.0, 'color': 0.5},
+        {'lat': 0.2, 'lon': 0.1, 'timestamp': '1970-01-02T00:00:00.000Z', 'course': 180.0, 'color': 0.5},
+        {'lat': 0.3, 'lon': 0.0, 'timestamp': '1970-01-02T12:00:00.000Z', 'course': 180.0, 'color': 0.5},
         ]
 
     def setUp(self):
@@ -66,7 +68,7 @@ class KmlTrackTest(unittest.TestCase):
         self.assertEqual([point.text.strip() for point in points], ['0.3,0.0,0', '0.2,0.1,0', '0.1,0.2,0', '0.0,0.3,0'])
 
         timestamps = mydoc.findall('//{http://www.opengis.net/kml/2.2}Placemark/{http://www.opengis.net/kml/2.2}TimeStamp/{http://www.opengis.net/kml/2.2}when')
-        self.assertEqual([timestamp.text.strip() for timestamp in timestamps], ['1970-01-01T00:00:00Z', '1970-01-01T01:00:00Z', '1970-01-01T02:00:00Z', '1970-01-01T03:00:00Z'])
+        self.assertEqual([timestamp.text.strip() for timestamp in timestamps], ['1970-01-01T00:00:00Z', '1970-01-01T12:00:00Z', '1970-01-02T00:00:00Z', '1970-01-02T12:00:00Z'])
 
         colors = mydoc.findall('//{http://www.opengis.net/kml/2.2}Placemark/{http://www.opengis.net/kml/2.2}Style//{http://www.opengis.net/kml/2.2}color')
         self.assertEqual([color.text.strip() for color in colors], ['ff7ab6fa', 'ff7ab6fa', 'ff7ab6fa', 'ff7ab6fa'])
@@ -103,7 +105,7 @@ class KmlTrackTest(unittest.TestCase):
         self.assertEqual([point.text.strip() for point in points], ['0.3,1.0,0', '0.2,1.1,0', '0.1,1.2,0', '0.0,1.3,0'])
 
         timestamps = mydoc.findall('//{http://www.opengis.net/kml/2.2}Placemark/{http://www.opengis.net/kml/2.2}TimeStamp/{http://www.opengis.net/kml/2.2}when')
-        self.assertEqual([timestamp.text.strip() for timestamp in timestamps], ['1970-01-02T00:00:00Z', '1970-01-02T01:00:00Z', '1970-01-02T02:00:00Z', '1970-01-02T03:00:00Z'])
+        self.assertEqual([timestamp.text.strip() for timestamp in timestamps], ['1970-01-02T00:00:00Z', '1970-01-02T12:00:00Z', '1970-01-03T00:00:00Z', '1970-01-03T12:00:00Z'])
 
         colors = mydoc.findall('//{http://www.opengis.net/kml/2.2}Placemark/{http://www.opengis.net/kml/2.2}Style//{http://www.opengis.net/kml/2.2}color')
         self.assertEqual([color.text.strip() for color in colors], ['ffe5fafd', 'ffe5fafd', 'ffe5fafd', 'ffe5fafd'])
@@ -121,3 +123,40 @@ class KmlTrackTest(unittest.TestCase):
         mydoc = elementtree.ElementTree.ElementTree(file=self.outfile)
         points = mydoc.findall('//{http://www.opengis.net/kml/2.2}Point/{http://www.opengis.net/kml/2.2}coordinates')
         self.assertEqual(len(points), 0)
+
+    def test_lookahead(self):
+        self.assertFalse(hasattr(kmltrack.iterators.lookahead(iter([])), "peek"))
+
+        with self.assertRaises(StopIteration):
+            kmltrack.iterators.lookahead(iter([])).next()
+
+        l = kmltrack.iterators.lookahead(iter([1, 2]))
+        self.assertEqual(l.peek, 1)
+        self.assertEqual(l.next(), 1)
+        self.assertEqual(l.peek, 2)
+        self.assertEqual(l.next(), 2)
+        with self.assertRaises(StopIteration):
+            l.next()
+
+    def test_template(self):
+        class TestTemplate(kmltrack.template.Template):
+            template = "$$ A ${foo} B $bar C $fie D"
+            foo = "hello"
+            def bar(self, f, ctx):
+                f.write("world")
+
+            class fie(kmltrack.template.Template):
+                template = "( $nana )"
+                nana = "better"
+
+        outfile = os.path.join(self.dir, 'out.tmpl')
+        with open(outfile, 'w') as f:
+            TestTemplate(f)
+
+        with open(outfile) as f:
+            out = f.read()
+
+        self.assertIn("hello", out)
+        self.assertIn("world", out)
+        self.assertIn("better", out)
+ 

@@ -33,8 +33,6 @@ class Template(object):
             value = context[name]
         elif hasattr(self, name):
             value = getattr(self, name)
-        elif hasattr(cls, name):
-            value = getattr(cls, name)
         elif self.ignore_missing:
             return
         else:
