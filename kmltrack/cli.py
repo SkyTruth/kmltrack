@@ -1,6 +1,3 @@
-#! /usr/bin/env python
-# SETUPTOOLS_DO_NOT_WRAP
-
 import sys
 import traceback
 import kmltrack.fileconverter
@@ -42,7 +39,3 @@ def main(verbose, verify_rows, format, map, input, output):
         converter(input, output, verbose=verbose, verify_rows=verify_rows, format=format, column_map=map)
     except Exception, e:
         raise click.UsageError(str(e))
-        
-
-if __name__ == '__main__':
-    main()
