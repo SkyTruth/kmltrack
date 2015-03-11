@@ -5,7 +5,7 @@ Source data can be in one of three formats: msgpack, json, csv
 
 Licensed under GPL 3.0
 
-To install:
+# Installation
 
     pip install kmltrack
     
@@ -15,7 +15,8 @@ or
     cd kmltrack
     python setup.py install
 
-Usage example:
+# Usage example
+The following example converts speed values in the input (in knots for example) into color values. Color values are in the range [0.0, 1.0] for a color gradient from black to white over red and yellow (you can alternatively specify red, green and blue separately).
 
     kmltrack --map-color='float(speed) / 17.0' --map-course=cog input.json output.kml
 
