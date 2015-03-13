@@ -27,3 +27,4 @@ Example input.json
     {'lat': 0.2, 'lon': 0.1, 'timestamp': '1970-01-02T00:00:00.000Z', 'course': 180.0, 'speed': 7.0}
     {'lat': 0.3, 'lon': 0.0, 'timestamp': '1970-01-02T12:00:00.000Z', 'course': 180.0, 'speed': 2.0}
 
+[![Build Status](https://travis-ci.org/SkyTruth/kmltrack.svg?branch=master)](https://travis-ci.org/SkyTruth/kmltrack)
