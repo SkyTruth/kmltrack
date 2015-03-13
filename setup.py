@@ -13,8 +13,8 @@ setup(
     keywords = "kml",
     install_requires = ["python-dateutil"],
     extras_require = {
-        'cli':  ["click"],
-        'msgpack':  ["msgpack"]
+        'cli':  ["click=>3.3"],
+        'msgpack':  ["msgpack-python>=0.4.2"]
     },
     version = "0.0.5",
     author = "Egil Moeller",
