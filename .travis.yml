@@ -4,7 +4,7 @@ python:
   - "2.7"
 
 install:
-  - python setup.py develop easy_install kmltrack[cli,msgpack]
+  - python setup.py develop easy_install kmltrack[cli,msgpack,test]
 
 script:
   - nosetests --with-coverage
