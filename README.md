@@ -1,6 +1,6 @@
 # kmltrack
 
-[![Build Status](https://travis-ci.org/SkyTruth/kmltrack.svg?branch=master)](https://travis-ci.org/SkyTruth/kmltrack)
+[![Build Status](https://travis-ci.org/SkyTruth/kmltrack.svg?branch=master)](https://travis-ci.org/SkyTruth/kmltrack) [![Coverage Status](https://coveralls.io/repos/SkyTruth/kmltrack/badge.svg)](https://coveralls.io/r/SkyTruth/kmltrack)
 
 kmltrack converts a track (a series of lat/lon/timestamp and optional measurement values) into a kml file.
 
