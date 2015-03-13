@@ -4,7 +4,6 @@ python:
   - "2.7"
 
 install:
-  - pip install -r requirements-dev.txt
   - pip install coveralls
   - python setup.py develop easy_install kmltrack[cli,msgpack,test]
 
