@@ -17,7 +17,7 @@ setup(
         'msgpack':  ["msgpack-python>=0.4.2"],
         'test': ["elementtree>=1.2.6", "nose", "coverage"]
     },
-    version = "0.0.5",
+    version = "0.0.6",
     author = "Egil Moeller",
     author_email = "egil@skytruth.org",
     license = "GPL",
