@@ -194,7 +194,8 @@ placemark_template = """<Placemark>
     <tr><th align="right">Latitude</th><td>$lat</td></tr>
     <tr><th align="right">Longitude</th><td>$lon</td></tr>
     <tr><th align="right">Vessel Info</th><td><a href="$marinetraffic_url">marinetraffic.com</a> <a href="$itu_url">ITU</a></td></tr>
-</table>    
+    $_extra
+</table>
     </description>    
     <styleUrl>#vesselStyleMap</styleUrl>
     <TimeStamp><when>$when</when></TimeStamp>

@@ -3,6 +3,8 @@ import math
 import kmltrack.template
 import kmltrack.iterators
 import kmltrack.template_strings
+import json
+import xml.sax.saxutils
 
 class DocumentKMLTemplate(kmltrack.template.Template):
     template = kmltrack.template_strings.document_kml_template
@@ -43,6 +45,12 @@ class DocumentKMLTemplate(kmltrack.template.Template):
                 ignore_missing = True
 
                 @staticmethod
+                def _extra(out_file, context):
+                    for key, value in context['row'].iteritems():
+                        if key in set(('name','shiptype','mmsi','to_bow','timestamp','heading','speed','course','lat','lon')): continue
+                        out_file.write('<tr><th>%s</th><td>%s</td></tr>\n' % (key, xml.sax.saxutils.escape(str(value))))
+
+                @staticmethod
                 def when(out_file, context):
                     out_file.write(context['timestamp'].strftime('%Y-%m-%dT%H:%M:%SZ'))
 
@@ -69,6 +77,7 @@ class DocumentKMLTemplate(kmltrack.template.Template):
             def placemarks_kml(self, out_file, context):
                 for row in context['rows']:
                     ctx = dict(context)
+                    ctx['row'] = row
                     ctx.update(row)
                     self.PlacemarkTemplate(out_file, ctx)
                     if not hasattr(context['rows'], 'peek'):

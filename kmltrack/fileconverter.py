@@ -59,7 +59,11 @@ def file_to_kml(infile_name, outfile_name, reader, **kw):
 
 
 def csv_to_kml(infile_name, outfile_name, **kw):
-     file_to_kml(infile_name, outfile_name, csv.DictReader, **kw)
+    def reader(file):
+        for row in csv.DictReader(file):
+            row.update(json.loads(row.pop('extra', '{}')))
+            yield row
+    file_to_kml(infile_name, outfile_name, reader, **kw)
 
 def json_to_kml(infile_name, outfile_name, **kw):
     def reader(file):
